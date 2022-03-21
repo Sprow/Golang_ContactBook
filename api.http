@@ -1,0 +1,60 @@
+### Cookie changes every 24h
+
+POST  http://127.0.0.1:8082/add_contact
+Content-Type: application/json
+Cookie: token=c8sbf85cnp1vtd7orqcg
+
+{
+  "name": "Jonny",
+  "phoneNumber": "80631234567"
+}
+
+###
+
+POST  http://127.0.0.1:8082/remove_contact
+Content-Type: application/json
+Cookie: token=c8sbf85cnp1vtd7orqcg
+
+{
+  "id": 1
+}
+
+###
+
+POST  http://127.0.0.1:8082/update_contact
+Content-Type: application/json
+Cookie: token=c8sbf85cnp1vtd7orqcg
+
+{
+  "id": 1,
+  "name": "Flinn",
+  "phone_number": "80931111111"
+}
+
+###
+
+POST  http://127.0.0.1:8082/update_contact
+Content-Type: application/json
+Cookie: token=c8sbf85cnp1vtd7orqcg
+
+{
+  "id": 2,
+  "name": "",
+  "phone_number": "80931111111"
+}
+
+###
+
+###
+
+POST  http://127.0.0.1:8082/update_contact
+Content-Type: application/json
+Cookie: token=c8sbf85cnp1vtd7orqcg
+
+{
+  "id": 3,
+  "name": "Kolya",
+  "phone_number": ""
+}
+
+###
