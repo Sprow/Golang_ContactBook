@@ -1,5 +1,7 @@
 package contactBook
 
+import "net/http"
+
 type Contacts map[int]Contact
 
 type ListOfContacts struct {
@@ -65,4 +67,12 @@ type UpdateContactDTO struct {
 	Id          int         `json:"id"`
 	Name        Name        `json:"name"`
 	PhoneNumber PhoneNumber `json:"phone_number"`
+}
+
+// ??????????????
+func (*ListOfContacts) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
+}
+func (*Contact) Render(w http.ResponseWriter, r *http.Request) error {
+	return nil
 }
