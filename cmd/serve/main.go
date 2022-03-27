@@ -14,10 +14,6 @@ import (
 	"path/filepath"
 )
 
-// TODO
-// postgres
-// try to use new generic to clone map
-
 func main() {
 	dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
 	if err != nil {
@@ -36,8 +32,7 @@ func main() {
 	}
 	fmt.Println(database.Conn.Ping())
 
-	//cm := contactBook.NewContactManager() // change contactManger to sessionManager in handler
-	sm := session.NewSessionManager()
+	sm := session.NewSessionManager(database)
 	h := handler.NewHandler(sm)
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)

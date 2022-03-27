@@ -2,6 +2,7 @@ package db
 
 import (
 	"database/sql"
+	_ "embed"
 	"fmt"
 	_ "github.com/lib/pq"
 	"log"
@@ -40,5 +41,18 @@ func Initialize(cfg Config) (Database, error) {
 		return db, err
 	}
 	log.Println("Database connection established")
+	err = migrate(db)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println("migrate complete")
 	return db, nil
+}
+
+//go:embed migrate.sql
+var migrationSql string
+
+func migrate(db Database) error {
+	_, err := db.Conn.Exec(migrationSql)
+	return err
 }

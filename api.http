@@ -1,58 +1,58 @@
 ### Cookie changes every 24h
 
-POST  http://127.0.0.1:8082/add_contact
+POST  http://127.0.0.1:8080/add_contact
 Content-Type: application/json
-Cookie: token=c8sbf85cnp1vtd7orqcg
+Cookie: token=845748b1-9dd2-4ffd-8bcf-b08ba59a6429
 
 {
   "name": "Jonny",
-  "phoneNumber": "80631234567"
+  "phone_number": "80631234567"
 }
 
 ###
 
-POST  http://127.0.0.1:8082/remove_contact
+POST  http://127.0.0.1:8080/remove_contact
 Content-Type: application/json
-Cookie: token=c8sbf85cnp1vtd7orqcg
+Cookie: token=845748b1-9dd2-4ffd-8bcf-b08ba59a6429
 
 {
-  "id": 1
+  "id": "b3f0eb6d-1fc1-467e-81f1-2438747ad139"
 }
 
 ###
 
-POST  http://127.0.0.1:8082/update_contact
+POST  http://127.0.0.1:8080/update_contact
 Content-Type: application/json
-Cookie: token=c8sbf85cnp1vtd7orqcg
+Cookie: token=845748b1-9dd2-4ffd-8bcf-b08ba59a6429
 
 {
-  "id": 1,
+  "id": "b29d3a9c-1320-4c6a-a9a8-83796f5e3114",
   "name": "Flinn",
   "phone_number": "80931111111"
 }
 
 ###
 
-POST  http://127.0.0.1:8082/update_contact
+POST  http://127.0.0.1:8080/update_contact
 Content-Type: application/json
-Cookie: token=c8sbf85cnp1vtd7orqcg
+Cookie: token=845748b1-9dd2-4ffd-8bcf-b08ba59a6429
 
 {
-  "id": 2,
+  "id": "4216d727-066c-44af-8bc6-2865662329e0",
   "name": "",
-  "phone_number": "80931111111"
+  "phone_number": "80931111122"
 }
 
 ###
 
 ###
 
-POST  http://127.0.0.1:8082/update_contact
+POST  http://127.0.0.1:8080/update_contact
 Content-Type: application/json
-Cookie: token=c8sbf85cnp1vtd7orqcg
+Cookie: token=845748b1-9dd2-4ffd-8bcf-b08ba59a6429
 
 {
-  "id": 3,
+  "id": "b29d3a9c-1320-4c6a-a9a8-83796f5e3114",
   "name": "Kolya",
   "phone_number": ""
 }

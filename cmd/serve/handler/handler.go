@@ -4,23 +4,16 @@ import (
 	"ContactBook/internal/contactBook"
 	"ContactBook/internal/session"
 	"encoding/json"
-	"fmt"
 	"github.com/go-chi/chi/v5"
-	"github.com/rs/xid"
+	"github.com/google/uuid"
+	"log"
 	"net/http"
 	"time"
 )
 
 type Handler struct {
-	//contactManager *contactBook.ContactManager
 	sessionManager *session.SessionManager
 }
-
-//func NewHandler(contactManager *contactBook.ContactManager) *Handler {
-//	return &Handler{
-//		contactManager: contactManager,
-//	}
-//}
 
 func NewHandler(sessionManager *session.SessionManager) *Handler {
 	return &Handler{
@@ -41,45 +34,57 @@ func (h *Handler) addContact(w http.ResponseWriter, r *http.Request) {
 	var contact contactBook.Contact
 	err := d.Decode(&contact)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	//h.contactManager.AddContact(contact)
-	contactManager.AddContact(contact)
+	err = contactManager.AddContact(contact)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
-type Index struct {
-	Id int `json:"id"`
+type contactId struct {
+	Id string `json:"id"`
 }
 
 func (h *Handler) removeContact(w http.ResponseWriter, r *http.Request) {
 	contactManager := h.sessionManager.GetSession(h.getToken(r))
 	d := json.NewDecoder(r.Body)
-	var id Index
+	var id contactId
 	err := d.Decode(&id)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	contactManager.RemoveContact(id.Id)
+	err = contactManager.RemoveContact(id.Id)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (h *Handler) updateContact(w http.ResponseWriter, r *http.Request) {
 	contactManager := h.sessionManager.GetSession(h.getToken(r))
 	d := json.NewDecoder(r.Body)
-	var updateObj contactBook.UpdateContactDTO
+	var updateObj contactBook.Contact
 	err := d.Decode(&updateObj)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
-	contactManager.UpdateContact(updateObj)
+	err = contactManager.UpdateContact(updateObj)
+	if err != nil {
+		log.Println(err)
+	}
 }
 
 func (h *Handler) getAllContacts(w http.ResponseWriter, r *http.Request) {
 	contactManager := h.sessionManager.GetSession(h.getToken(r))
-	encoder := json.NewEncoder(w)
-	data := contactManager.GetAllContacts()
-	err := encoder.Encode(data)
+	data, err := contactManager.GetAllContacts()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
+	}
+	encoder := json.NewEncoder(w)
+
+	err = encoder.Encode(data)
+	if err != nil {
+		log.Println(err)
 	}
 }
 
@@ -97,7 +102,7 @@ func (h *Handler) sessionMiddleware(handler http.HandlerFunc) http.HandlerFunc {
 		if t == "" {
 			cookie := http.Cookie{
 				Name:     "token",
-				Value:    xid.New().String(),             //new token
+				Value:    uuid.New().String(),            //new token
 				Expires:  time.Now().Add(24 * time.Hour), //user lose his contact book after 24h
 				HttpOnly: true,
 			}

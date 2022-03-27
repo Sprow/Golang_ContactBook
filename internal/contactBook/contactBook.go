@@ -1,55 +1,100 @@
 package contactBook
 
 import (
-	"fmt"
-	"sync"
+	"ContactBook/internal/db"
+	"github.com/google/uuid"
+	"log"
 )
 
 type ContactManager struct {
-	list *ListOfContacts
-	mu   sync.Mutex
+	db     db.Database
+	userId string
 }
 
-func NewContactManager() *ContactManager {
+func NewContactManager(db db.Database, id string) *ContactManager {
 	return &ContactManager{
-		list: &ListOfContacts{
-			Contacts: map[int]Contact{},
-		},
+		db:     db,
+		userId: id,
 	}
 }
 
-func (cm *ContactManager) AddContact(contact Contact) {
+func (m *ContactManager) GetAllContacts() (Contacts, error) {
+	contacts := Contacts{}
+
+	log.Println("user id>>", m.userId)
+	rows, err := m.db.Conn.Query(
+		`SELECT id, name, phone_number FROM contacts JOIN user_contacts 
+    			ON contacts.id = user_contacts.contact_id
+				WHERE user_contacts.user_id=$1 ORDER BY name;`, m.userId)
+	if err != nil {
+		return contacts, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var contact Contact
+		err := rows.Scan(&contact.Id, &contact.Name, &contact.PhoneNumber)
+		if err != nil {
+			return contacts, err
+		}
+		contacts.ContactsList = append(contacts.ContactsList, contact)
+	}
+	log.Println("contacts>>>", contacts)
+	return contacts, nil
+}
+
+func (m *ContactManager) AddContact(contact Contact) error {
 	if contact.isValid() {
-		cm.mu.Lock()
-		defer cm.mu.Unlock()
-		id := cm.list.NewId()
-		cm.list.Contacts[id] = contact
-	} else {
-		fmt.Println("Wrong contact input")
-	}
-}
-
-func (cm *ContactManager) RemoveContact(id int) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	delete(cm.list.Contacts, id)
-}
-
-func (cm *ContactManager) UpdateContact(obj UpdateContactDTO) {
-	cm.mu.Lock()
-	defer cm.mu.Unlock()
-	contact, ok := cm.list.Contacts[obj.Id]
-	if ok {
-		if obj.Name.isValid() {
-			contact.Name = obj.Name
+		uuidNew := uuid.New()
+		log.Println("add contact (name, phone) >>>", contact)
+		_, err := m.db.Conn.Exec(
+			"INSERT INTO contacts (id, name, phone_number) VALUES ($1, $2, $3)",
+			uuidNew, contact.Name, contact.PhoneNumber)
+		if err != nil {
+			return err
 		}
-		if obj.PhoneNumber.isValid() {
-			contact.PhoneNumber = obj.PhoneNumber
+		_, err = m.db.Conn.Exec("INSERT INTO user_contacts (user_id, contact_id) VALUES ($1, $2)",
+			m.userId, uuidNew)
+		if err != nil {
+			return err
 		}
-		cm.list.Contacts[obj.Id] = contact
 	}
+	return nil
 }
 
-func (cm *ContactManager) GetAllContacts() Contacts {
-	return cm.list.Clone()
+func (m *ContactManager) RemoveContact(contactId string) error {
+	log.Println("RemoveContact contactId>>>", contactId)
+	_, err := m.db.Conn.Exec("DELETE FROM contacts WHERE id=$1", contactId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (m *ContactManager) UpdateContact(contact Contact) error {
+	log.Println("UpdateContact >>>", contact)
+	log.Println("UpdateContact Name>>>", contact.Name)
+	log.Println("UpdateContact PhoneNumber>>>", contact.PhoneNumber)
+	if contact.isValid() {
+		_, err := m.db.Conn.Exec("UPDATE contacts SET name=$1, phone_number=$2 WHERE id=$3",
+			contact.Name, contact.PhoneNumber, contact.Id)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if contact.Name.isValid() && !contact.PhoneNumber.isValid() {
+		_, err := m.db.Conn.Exec("UPDATE contacts SET name=$1 WHERE id=$2",
+			contact.Name, contact.Id)
+		if err != nil {
+			return err
+		}
+		return nil
+	} else if !contact.Name.isValid() && contact.PhoneNumber.isValid() {
+		_, err := m.db.Conn.Exec("UPDATE contacts SET phone_number=$1 WHERE id=$2",
+			contact.PhoneNumber, contact.Id)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	return nil
 }
